@@ -1,0 +1,74 @@
+variable,type,description
+record_id,string,Visit identifier (one row per emergency department visit)
+patient_id,string,Patient identifier (several visits per patient are possible)
+year,integer,Calendar year of the index visit (2018-2024)
+age,float,Age at the index visit in years
+age_65_plus,0/1,Age 65 years or older
+sex,category,female / male
+sodium_index,float,Index serum sodium (mmol/L); first biochemistry value <125 mmol/L within 6 h of presentation
+sodium_index_corrected,float,Glucose-corrected index sodium (+1.6 mmol/L per 100 mg/dL of glucose above 100 mg/dL)
+osmolality,float,Calculated serum osmolality (mOsm/kg)
+prior_sodium,category,normal / low / unknown; median of at least two serum sodium values 7-365 days before the index visit (<135 mmol/L low)
+charlson,float,Charlson comorbidity index
+heart_failure,0/1,Heart failure (comorbidity)
+ckd,0/1,Chronic kidney disease (comorbidity)
+malignancy,0/1,Malignancy (comorbidity)
+dementia,0/1,Dementia (comorbidity)
+diabetes,0/1,Diabetes mellitus (comorbidity)
+hypertension,0/1,Hypertension
+thiazide,0/1,Thiazide diuretic before presentation
+loop_diuretic,0/1,Loop diuretic before presentation
+ssri_snri,0/1,SSRI or SNRI before presentation
+ppi,0/1,Proton pump inhibitor before presentation
+any_diuretic,0/1,Any diuretic before presentation (model covariate)
+n_medications,float,Number of active substances on medication reports valid at presentation
+nrs2002,float,Nutritional Risk Screening 2002 score recorded during index care (missing when not recorded)
+potassium,float,Index potassium (mmol/L)
+creatinine,float,Index creatinine (mg/dL)
+egfr,float,Estimated GFR (mL/min/1.73 m2; CKD-EPI 2021)
+albumin,float,Index albumin (g/L)
+glucose,float,Glucose matched to the index sodium (mg/dL)
+crp,float,Index C-reactive protein (mg/L)
+admitted,0/1,Admitted to a ward or intensive care unit
+icu_24h,0/1,Intensive care unit admission within 24 h of the index measurement
+hypertonic_saline,0/1,Any 3% sodium chloride order within 48 h of the index measurement
+hypertonic_saline_first_hour,float,Time from the index measurement to the first 3% sodium chloride order (hours)
+sodium_24h,float,Follow-up serum sodium at 24 h (12-36 h window; mmol/L)
+sodium_24h_time,float,Time of the follow-up sodium measurement (hours after the index measurement)
+delta_sodium_24h,float,Change in sodium from index to follow-up (mmol/L)
+rate_24h,float,Correction rate (mmol/L per 24 h)
+rate_category,category,<4 / 4-8 / >8-10 / >10 mmol/L per 24 h
+rate_48h,float,48-hour correction rate from the measurement at 36-60 h (mmol/L per 48 h)
+sodium_48h_time,float,Time of the 48-hour sodium measurement (hours)
+died,0/1,Death recorded during follow-up
+death_30d,0/1,Death within 30 days of presentation
+in_hospital_death,0/1,Death during the index care episode
+survival_days_lower,float,Lower bound of the death interval (days from presentation)
+survival_days_upper,float,Upper bound of the death interval (days from presentation)
+survival_days,float,Analysis survival time in days from presentation; for deaths whose interval crosses the landmark: (max(lower bound, 1.5) + upper bound) / 2
+discharge_day,float,End of the index care episode (days from presentation)
+discharge_source,category,Source of the end-of-care date: admission episode / emergency and laboratory record chain / death
+readmission_30d,0/1,Emergency department revisit or readmission within 30 days of discharge (missing when not discharged alive)
+daoh30,float,Days alive and out of hospital within 30 days (death within 30 days scored 0)
+rapid_correction_7d,0/1,Rapid correction at any time during days 0-7 (any of the three criteria below)
+max_rise_24h_7d,float,Largest sodium rise in any 24 h during days 0-7 (mmol/L)
+max_rise_48h_7d,float,Largest sodium rise in any 48 h during days 0-7 (mmol/L)
+rise_120_to_140_5d,0/1,Rise from <120 to >140 mmol/L within 5 days
+ods_high_risk,0/1,At least one risk factor for osmotic demyelination
+ods_grade,category,Adjudicated osmotic demyelination syndrome: none / unlikely / possible / probable / definite
+neuro_risk_set,0/1,In the 48-hour risk set for neurological deterioration (alive in hospital and event-free at 48 h)
+neuro_risk_set_uncertain,0/1,Death interval crosses 48 h (risk-set membership uncertain)
+neuro_event_type,category,neurological / death / discharge / censored (first event between 48 h and day 14)
+neuro_event_day,float,Time of the first event (days from presentation; 14 if censored)
+neuro_event_in_death_interval,0/1,Neurological event documented inside the death interval
+neuro_event,0/1,Neurological deterioration between 48 h and day 14
+exclusion_reason,string,Reason for exclusion from the eligible cohort (empty when eligible)
+eligible,0/1,Eligible visit (confirmed sodium <125 mmol/L; no artefact; glucose-corrected sodium <125)
+rate_available,0/1,Eligible visit with a calculable 24-hour correction rate
+first_visit,0/1,First eligible visit per patient with a calculable rate
+landmark_alive,0/1,Alive at the 24-hour landmark (1.5 days) - primary cohort flag
+landmark_uncertain,0/1,Death interval crosses the landmark
+alive_at_sample,0/1,Alive at the time of the 24-hour sodium measurement
+episode_sensitivity,0/1,Episode included in the all-episodes sensitivity cohort
+measured_sodium_cohort,0/1,Eligible on measured (uncorrected) sodium
+hillier_cohort,0/1,Eligible with the Hillier glucose correction factor (2.4)

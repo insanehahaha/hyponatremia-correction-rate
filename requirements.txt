@@ -1,0 +1,12 @@
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.16.3
+statsmodels==0.14.6
+lifelines==0.30.3
+scikit-learn==1.8.0
+joblib==1.5.3
+matplotlib==3.10.7
+openpyxl==3.1.5
+pyarrow>=15
+python-docx==1.2.0
+Pillow>=10
