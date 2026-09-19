@@ -111,8 +111,8 @@ for c in cols1[1:6]:
     T1[c] = T1[c].apply(lambda v: "" if is_empty(v) else str(v))
 n_band = {b: int((L["age_band"] == b).sum()) for b in BANDS}
 T1.columns = ["Characteristic", f"All patients (n = {len(L)})"] + [f"{BAND[b]} (n = {n_band[b]})" for b in BANDS] + ["Missing, n", "Largest SMD"]
-T1, missing1 = simplify(T1, "Characteristic", "Missing, n")
 T1 = T1[~T1["Characteristic"].isin(["Glucose-corrected serum sodium, mmol/L", "Creatinine, mg/dL", "Active substances on medication reports, n", "NRS-2002 score"])].copy()
+T1, missing1 = simplify(T1, "Characteristic", "Missing, n")
 SHORT = {"Thiazide diuretic before presentation": "Thiazide diuretic", "Loop diuretic before presentation": "Loop diuretic", "SSRI or SNRI before presentation": "SSRI or SNRI",
          "Proton pump inhibitor before presentation": "Proton pump inhibitor", "Admitted to ward or intensive care unit": "Admitted to ward or ICU",
          "Intensive care unit admission within 24 h": "ICU admission within 24 h"}
