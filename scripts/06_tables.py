@@ -124,7 +124,7 @@ add_table(main, T1, "Table 1. Characteristics of the study population by age gro
           + "SMD, largest absolute standardized mean difference between an older age group and the <65-year group. "
           "Medications refer to use before presentation: prescriptions within 90 days or active medication reports within 1 year before the index visit. Active substances: substances listed on medication reports valid at presentation. "
           f"NRS-2002, Nutritional Risk Screening 2002, recorded during index care in {n_nrs} of 1282 patients; the score adds one point at age ≥70 years. "
-          "Care and treatment refer to the index care episode; hypertonic saline is any 3% sodium chloride order within 48 h of the index measurement. Correction-rate categories are n (%) of patients. eGFR, estimated glomerular filtration rate; ICU, intensive care unit; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
+          "Care and treatment refer to the index care episode; hypertonic saline is any 3% sodium chloride order within 48 h of the index measurement. Correction-rate categories are n (%) of patients. To convert glucose to mmol/L, multiply by 0.0555. eGFR, estimated glomerular filtration rate; ICU, intensive care unit; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
           section=section_row)
 
 # ---- Table 2: correction rate and 30-day mortality by time origin
@@ -257,7 +257,7 @@ t1, missing2 = simplify(t1, "Characteristic", "Missing, n")
 add_table(supp, t1, "Supplementary Table S1. Characteristics of the study population by correction-rate category",
           "24-hour landmark cohort, n = 1282. Column headings are correction-rate categories in mmol/L/24 h. Continuous variables are median (interquartile range) among available measurements; categorical variables are n (%). " + missing2
           + "SMD, largest absolute standardized mean difference versus the 4–8 mmol/L/24 h reference group. "
-          "Baseline characteristics refer to the time of the index sodium measurement; glucose-corrected sodium, eGFR and prior sodium status as defined in the Methods; medications before presentation are prescriptions within 90 days or active medication reports within 1 year. Care and treatment refer to the index care episode; hypertonic saline is any 3% sodium chloride order within 48 h of the index measurement. eGFR, estimated glomerular filtration rate; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
+          "Baseline characteristics refer to the time of the index sodium measurement; glucose-corrected sodium, eGFR and prior sodium status as defined in the Methods; medications before presentation are prescriptions within 90 days or active medication reports within 1 year. Care and treatment refer to the index care episode; hypertonic saline is any 3% sodium chloride order within 48 h of the index measurement. To convert glucose to mmol/L, multiply by 0.0555; to convert creatinine to µmol/L, multiply by 88.4. eGFR, estimated glomerular filtration rate; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
           section=section_row)
 
 # ---- S2: mortality between days 7 and 30; secondary outcomes by age group
