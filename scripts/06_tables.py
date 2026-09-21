@@ -62,7 +62,9 @@ def simplify(df, label_col, missing_col):
             v = 0
         name = str(r[label_col])
         if v > 0 and not name.startswith(("24-hour", "Correction rate", "NRS-2002", "Glucose-corrected")):
-            parts.append(f"{name.split(',')[0]} {v}")
+            label = name.split(",")[0]
+            label = label if label in ("eGFR", "C-reactive protein") else label[0].lower() + label[1:]
+            parts.append(f"{label} {v}")
     df = df.drop(columns=[missing_col])
     return df, ("Missing values: " + ", ".join(parts) + ". ") if parts else ""
 
@@ -120,11 +122,9 @@ SHORT.update({f"Correction rate {RATE_SHORT[k]} mmol/L/24 h": f"  {RATE_SHORT[k]
 T1["Characteristic"] = T1["Characteristic"].replace(SHORT)
 n_nrs = int(L["nrs2002"].notna().sum())
 add_table(main, T1, "Table 1. Characteristics of the study population by age group", widths=[1.85, 0.82, 0.78, 0.78, 0.78, 0.78, 0.55],
-          footnote="24-hour landmark cohort, n = 1282. Continuous variables are median (interquartile range) among available measurements; categorical variables are n (%). " + missing1
-          + "SMD, largest absolute standardized mean difference between an older age group and the <65-year group. "
-          "Medications refer to use before presentation: prescriptions within 90 days or active medication reports within 1 year before the index visit. Active substances: substances listed on medication reports valid at presentation. "
-          f"NRS-2002, Nutritional Risk Screening 2002, recorded during index care in {n_nrs} of 1282 patients; the score adds one point at age ≥70 years. "
-          "Care and treatment refer to the index care episode; hypertonic saline is any 3% sodium chloride order within 48 h of the index measurement. Correction-rate categories are n (%) of patients. To convert glucose to mmol/L, multiply by 0.0555. eGFR, estimated glomerular filtration rate; ICU, intensive care unit; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
+          footnote="Values are median (interquartile range) or n (%). " + missing1 + "Medications: prescriptions within 90 days or active medication reports within 1 year before presentation. "
+    f"NRS-2002 recorded in {n_nrs} patients. "
+    "Hypertonic saline: any 3% sodium chloride order within 48 h of the index measurement. To convert glucose to mmol/L, multiply by 0.0555. eGFR, estimated glomerular filtration rate; ICU, intensive care unit; NRS-2002, Nutritional Risk Screening 2002; SMD, largest absolute standardized mean difference versus the <65-year group; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
           section=section_row)
 
 # ---- Table 2: correction rate and 30-day mortality by time origin
@@ -146,11 +146,14 @@ for origin in ORIGINS:
                      "Adjusted OR (95% CI)": "1 (reference)" if k == REF else ci(o.loc[f"rate_{k}", "OR"], o.loc[f"rate_{k}", "lower"], o.loc[f"rate_{k}", "upper"]),
                      "Standardized 30-day mortality risk, % (95% CI)": f"{rr['risk_pct']:.1f} ({rr['risk_lower']:.1f}{DASH}{rr['risk_upper']:.1f})",
                      "Risk difference, percentage points (95% CI)": "0 (reference)" if k == REF else ci_to(rr["rd_vs_ref_pct"], rr["rd_lower"], rr["rd_upper"])})
-joint = "; ".join(f"{ORIGIN[o]}: correction rate {test_p(summary.loc[o, 'd1_rate'])}, age × correction rate {test_p(summary.loc[o, 'd1_age_x_rate'])}" for o in ORIGINS)
+p_rate = {o: test_p(summary.loc[o, "d1_rate"]) for o in ORIGINS}
+p_int = {o: test_p(summary.loc[o, "d1_age_x_rate"]).replace("p = ", "") for o in ORIGINS}
+JOINT = (f"24-hour landmark, correction rate {p_rate[ORIGINS[0]]}, age × correction rate p = {p_int[ORIGINS[0]]}; "
+         f"time of 24-hour measurement, {p_rate[ORIGINS[1]]} and {p_int[ORIGINS[1]]}; "
+         f"time of presentation, {p_rate[ORIGINS[2]]} and {p_int[ORIGINS[2]]}")
 add_table(main, pd.DataFrame(rows), "Table 2. Sodium correction rate and 30-day mortality by time origin", widths=[1.5, 1.4, 1.75, 1.65],
-          footnote="Multivariable logistic regression adjusted for the covariates listed in the Methods (17 degrees of freedom). "
-          "Joint tests: " + joint + ". "
-          "In all three analyses the outcome is death within 30 days of ED presentation. Risk sets differ: the 24-hour landmark analysis includes first eligible visits of patients alive at the landmark (1282 patients, 225 deaths); the analyses starting at the time of the 24-hour sodium measurement and at ED presentation include all first eligible visits with a calculable correction rate (the same 1293 patients and 236 deaths), and in the ED-presentation analysis the exposure is determined after the time origin. CI, confidence interval; ED, emergency department; eGFR, estimated glomerular filtration rate; OR, odds ratio.",
+          footnote="Adjusted odds ratios and standardized risks from multivariable logistic regression; covariates are listed in the Methods. Joint tests: " + JOINT + ". "
+    "CI, confidence interval; ED, emergency department; OR, odds ratio.",
           section=section_row)
 
 # ---- Table 3: age-specific risks from the interaction models
@@ -179,9 +182,8 @@ for b in nbi["age_band"].unique():
     rows.append(row)
 add_table(main, pd.DataFrame(rows)[COLS3], "Table 3. Age-specific adjusted risks of 30-day mortality and neurological deterioration by correction rate",
           widths=[1.0, 0.7, 0.92, 0.92, 0.92, 0.92, 0.95],
-          footnote="Column headings are correction-rate categories in mmol/L/24 h. Estimates are model-based standardized risks within each age group; confidence intervals are from patient-level bootstrap. "
-          f"Mortality model: the 17-degree-of-freedom core model plus linear age × correction-rate interaction terms (joint test for interaction: {test_p(summary.loc['landmark (primary)', 'd1_age_x_rate'])}). Neurological model: the covariates listed in the Methods plus linear age × correction-rate interaction terms (joint Wald test with robust covariance, p = {p_fg_int:.2f}). "
-          "Differences between age groups are assessed by the joint interaction test rather than by comparing individual groups. Confidence intervals in the oldest group do not exclude clinically important differences. CI, confidence interval.",
+          footnote=f"Correction-rate categories in mmol/L/24 h. Standardized risks within each age group; confidence intervals from patient-level bootstrap. "
+    f"Joint tests for age × correction-rate interaction: mortality {test_p(summary.loc['landmark (primary)', 'd1_age_x_rate'])}, neurological deterioration p = {p_fg_int:.2f}. CI, confidence interval.",
           section=section_row)
 
 # ---- Table 4: secondary outcomes
@@ -235,10 +237,12 @@ for k in RATE_LEVELS:
     rows.append({C4[0]: RATE[k], C4[1]: f"{int(x['n'])} / {int(x['events'])}", C4[2]: f"{x['observed_risk_pct']:.1f}%",
                  C4[3]: "1 (reference)" if k == REF else "OR " + ci(readm.loc[f"rate_{k}", "OR"], readm.loc[f"rate_{k}", "lower"], readm.loc[f"rate_{k}", "upper"])})
 add_table(main, pd.DataFrame(rows)[C4], "Table 4. Sodium correction rate and secondary outcomes", widths=[1.9, 0.85, 1.75, 1.8],
-          footnote="Reference category 4–8 mmol/L/24 h. Observed: Aalen–Johansen 14-day cumulative incidence (neurological deterioration), Kaplan–Meier estimate (mortality), median (interquartile range) days (DAOH-30) and proportion (readmission); for DAOH-30, n / events counts patients with DAOH-30 = 0. Neurological model: robust confidence intervals for sHR, bootstrap intervals for standardized estimates (cause-specific hazard ratios in Supplementary Table S3). "
-          "Other models were adjusted for the covariates listed in the Methods. Mortality at 90 days and 1 year: Cox regression with delayed entry at 24 h (proportional hazards assessment and restricted mean survival time in Supplementary Table S3). "
-          "DAOH-30: whole days (0–30; death within 30 days scored 0); OR >1 indicates more days alive and out of hospital. "
-          "Readmission: denominator is patients discharged alive from the index care episode. BH-adjusted p: Benjamini–Hochberg false discovery rate across the six secondary correction-rate tests (the five outcomes in this table and mortality between days 7 and 30, Supplementary Table S2); for DAOH-30 it refers to the joint test. BH, Benjamini–Hochberg; CI, confidence interval; ED, emergency department; HR, hazard ratio; OR, odds ratio; RD, risk difference; sHR, subdistribution hazard ratio.",
+          footnote="Reference category 4–8 mmol/L/24 h. Observed: Aalen–Johansen 14-day cumulative incidence (neurological deterioration), Kaplan–Meier estimate (mortality), "
+    "median (interquartile range) days (DAOH-30), proportion (readmission); for DAOH-30, n / events counts patients with DAOH-30 = 0. "
+    "DAOH-30 scored in whole days, 0 for death within 30 days; OR >1 indicates more days alive and out of hospital. "
+    "BH-adjusted p: Benjamini–Hochberg adjustment across the six secondary tests (this table and Supplementary Table S2). "
+    "Proportional hazards assessment, restricted mean survival time and cause-specific hazard ratios in Supplementary Table S3. "
+    "BH, Benjamini–Hochberg; CI, confidence interval; DAOH-30, days alive and out of hospital within 30 days; ED, emergency department; HR, hazard ratio; OR, odds ratio; RD, risk difference; sHR, subdistribution hazard ratio.",
           section=section_row)
 main_path = os.path.join(OUT, "Tables_1-4.docx")
 main.save(main_path)
@@ -255,9 +259,8 @@ t1.columns = ["Characteristic", f"All patients (n = {len(L)})"] + [f"{RATE_SHORT
 t1["Missing, n"] = t1["Missing, n"].apply(lambda v: "" if is_empty(v) else str(int(float(v))))
 t1, missing2 = simplify(t1, "Characteristic", "Missing, n")
 add_table(supp, t1, "Supplementary Table S1. Characteristics of the study population by correction-rate category",
-          "24-hour landmark cohort, n = 1282. Column headings are correction-rate categories in mmol/L/24 h. Continuous variables are median (interquartile range) among available measurements; categorical variables are n (%). " + missing2
-          + "SMD, largest absolute standardized mean difference versus the 4–8 mmol/L/24 h reference group. "
-          "Baseline characteristics refer to the time of the index sodium measurement; glucose-corrected sodium, eGFR and prior sodium status as defined in the Methods; medications before presentation are prescriptions within 90 days or active medication reports within 1 year. Care and treatment refer to the index care episode; hypertonic saline is any 3% sodium chloride order within 48 h of the index measurement. To convert glucose to mmol/L, multiply by 0.0555; to convert creatinine to µmol/L, multiply by 88.4. eGFR, estimated glomerular filtration rate; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
+          "Values are median (interquartile range) or n (%). " + missing2 + "Medications: prescriptions within 90 days or active medication reports within 1 year before presentation. Hypertonic saline: any 3% sodium chloride order within 48 h of the index measurement. "
+    "To convert glucose to mmol/L, multiply by 0.0555; to convert creatinine to µmol/L, multiply by 88.4. eGFR, estimated glomerular filtration rate; SMD, largest absolute standardized mean difference versus the 4–8 mmol/L/24 h group; SNRI, serotonin–norepinephrine reuptake inhibitor; SSRI, selective serotonin reuptake inhibitor.",
           section=section_row)
 
 # ---- S2: mortality between days 7 and 30; secondary outcomes by age group
@@ -276,8 +279,9 @@ for _, r in by_age.iterrows():
     rows.append({C5[0]: BAND[r["age_band"]], C5[1]: f"{int(r['n'])}", C5[2]: f"{r['death_90d_n_pct']} / {r['death_1y_n_pct']}",
                  C5[3]: f"DAOH-30 {r['daoh_median_iqr'].replace('-', DASH)}", C5[4]: f"readmission {r['readmission_n_denominator_pct']}"})
 add_table(supp, pd.DataFrame(rows)[C5], "Supplementary Table S2. Mortality between days 7 and 30 and secondary outcomes by age group",
-          "Mortality between days 7 and 30: patients whose death was certain before day 7 were excluded (77); 11 patients whose death interval included day 7 were retained. Exposure is rapid correction at any time during the first 7 days, defined as an increase >10 mmol/L in any 24 h, >18 mmol/L in any 48 h, or a rise from <120 to >140 mmol/L within 5 days; this exposure differs from the primary 24-h correction-rate categories. The model was adjusted for the covariates listed in the Methods. "
-          "BH-adjusted p: Benjamini–Hochberg false discovery rate across the six secondary correction-rate tests (Table 4). In the age-group panel no interaction model was fitted; DAOH-30 is median (interquartile range); the readmission denominator is patients discharged alive from the index care episode. BH, Benjamini–Hochberg; CI, confidence interval; DAOH-30, days alive and out of hospital within 30 days; IQR, interquartile range; OR, odds ratio.",
+          "Mortality between days 7 and 30: 77 patients whose death was certain before day 7 were excluded; 11 whose death interval included day 7 were retained. "
+    "Exposure is rapid correction during the first 7 days as defined in the Methods. Age-group panel: descriptive only; readmission denominator is patients discharged alive. "
+    "BH-adjusted p as in Table 4. BH, Benjamini–Hochberg; CI, confidence interval; DAOH-30, days alive and out of hospital within 30 days; IQR, interquartile range; OR, odds ratio.",
           section=section_row)
 
 # ---- S3: sensitivity, subgroup and additional analyses
@@ -350,10 +354,11 @@ rows.append({C6[0]: "Neurological deterioration, cause-specific HR (95% CI), 48-
 rows.append({C6[0]: "Competing events, cause-specific HR (95% CI): death", C6[1]: "1139 / 96", C6[2]: three(lambda c: ci(cs_death.loc[c, "HR"], cs_death.loc[c, "lower"], cs_death.loc[c, "upper"])), C6[3]: EMPTY})
 rows.append({C6[0]: "Competing events, cause-specific HR (95% CI): discharge without event", C6[1]: "1139 / 731", C6[2]: three(lambda c: ci(cs_disch.loc[c, "HR"], cs_disch.loc[c, "lower"], cs_disch.loc[c, "upper"])), C6[3]: EMPTY})
 add_table(supp, pd.DataFrame(rows)[C6], "Supplementary Table S3. Sensitivity, subgroup and additional analyses",
-          "A: primary logistic model structure with the covariates listed in the Methods. For the 48-h correction rate the exposure is derived from the measurement at 36–60 h, so the risk set is patients alive at 60 h. "
-          "B: single model including correction rate, subgroup and their interaction; within-subgroup ORs are contrasts; interaction tests were adjusted within their own family (two tests) by the Benjamini–Hochberg procedure. "
-          "C: restricted mean survival time from Kaplan–Meier pseudo-values regressed on the covariates listed in the Methods (robust standard errors), same imputation sets as the Cox models, Rubin's rules; a positive difference indicates longer mean survival than the reference; this does not correct the covariate proportional-hazards violations of the Cox models. Discharge alive: competing event death during index care, censoring at day 30, time from 24 h; this outcome is not the same as the DAOH-30 distribution. Cause-specific neurological models: competing events censored at their own times; robust standard errors. "
-          "Absence of a statistically significant association is not evidence of equivalence or safety; confidence intervals do not exclude clinically important differences. BH, Benjamini–Hochberg; CI, confidence interval; DAOH-30, days alive and out of hospital within 30 days; HR, hazard ratio; OR, odds ratio; sHR, subdistribution hazard ratio.",
+          "A: primary model structure; for the 48-h correction rate the risk set is patients alive at 60 h, because the measurement falls at 36–60 h. "
+    "B: contrasts from a single model with subgroup × correction-rate interaction; interaction p values adjusted within their own family of two tests. "
+    "C: restricted mean survival time from Kaplan–Meier pseudo-values regressed on the covariates, same imputations as the Cox models; "
+    "discharge alive analyzed with death during index care as competing event, censoring at day 30, time from 24 h; cause-specific models censor competing events at their own times. "
+    "BH, Benjamini–Hochberg; CI, confidence interval; DAOH-30, days alive and out of hospital within 30 days; HR, hazard ratio; OR, odds ratio; sHR, subdistribution hazard ratio.",
           section=section_row)
 
 # ---- S4: components of neurological deterioration (event-level coding from chart review)
@@ -389,9 +394,8 @@ if os.path.exists(components_path):
             s4row("GCS series only, no narrative note", NB["gcs_series_only"] == 1),
             s4row("Death within 30 days", NB["death_30d"] == 1)]
     add_table(supp, pd.DataFrame(rows)[C7], "Supplementary Table S4. Components of neurological deterioration by correction-rate category",
-              footnote="Events in the 48-hour risk set (n = 1139; 79 events). Values are n (% of events in the column). Components were coded from the adjudicated clinical record of each event; an event may contribute to more than one component. "
-              "Severity follows the symptom classification of the European hyponatraemia guideline: severe, coma (GCS ≤8), seizure or stupor; moderately severe, confusion or somnolence; events with focal or movement findings only are shown separately. "
-              "Structural lesions (infarction, haemorrhage, metastasis) and concurrent infection, hypoxia or shock were not exclusion criteria, because the outcome was observed neurological deterioration rather than deterioration attributed to hyponatraemia. GCS, Glasgow Coma Scale.",
+              footnote="Values are n (% of events in the column); an event may contribute to more than one component. "
+    "Severity follows the European guideline symptom classification: severe, coma (GCS ≤8), seizure or stupor; moderately severe, confusion or somnolence. GCS, Glasgow Coma Scale.",
               section=section_row)
 else:
     print("results/neuro_components.xlsx not found: Supplementary Table S4 skipped")
