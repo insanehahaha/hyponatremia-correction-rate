@@ -3,8 +3,8 @@
 Figure 1: study flow diagram (results/01_descriptive.xlsx, sheet flow).
 Figure 2: adjusted odds ratio for 30-day mortality across the correction rate, restricted cubic
           spline, reference 6 mmol/L/24 h (results/05_sensitivity.xlsx, sheet spline_dose_response).
-Figure 3: age-specific standardized 30-day mortality (A) and 14-day cumulative incidence of
-          neurological deterioration (B) by correction-rate category, from the interaction models
+Figure 3: age-specific standardized 30-day mortality (a) and 14-day cumulative incidence of
+          neurological deterioration (b) by correction-rate category, from the interaction models
           (results/02_primary_model.xlsx, sheet figure3_age_grid; results/03_neurological.xlsx,
           sheet figure3_age_grid_interaction).
 
@@ -15,7 +15,8 @@ import sys
 
 import matplotlib
 matplotlib.use("Agg")
-matplotlib.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "DejaVu Sans"})
+matplotlib.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "sans-serif",
+                            "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"]})
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import pandas as pd
@@ -122,8 +123,8 @@ def age_panel(ax, G, ylabel, title, ymax):
 
 def age_panels(GA, GB):
     fig, axes = plt.subplots(2, 1, figsize=(6.7, 7.6))
-    age_panel(axes[0], GA, "Adjusted 30-day mortality risk (%)", "A", 60)
-    age_panel(axes[1], GB, "Adjusted 14-day cumulative incidence of\nneurological deterioration (%)", "B", 45)
+    age_panel(axes[0], GA, "Adjusted 30-day mortality risk (%)", "a", 60)
+    age_panel(axes[1], GB, "Adjusted 14-day cumulative incidence of\nneurological deterioration (%)", "b", 45)
     axes[0].legend(title="Correction rate (mmol/L per 24 h)", frameon=False, fontsize=8, title_fontsize=8, ncol=2)
     fig.tight_layout()
     return fig

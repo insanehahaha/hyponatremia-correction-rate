@@ -1,4 +1,4 @@
-"""Neurological deterioration within 14 days (Table 3 neurological panel, Figure 3B).
+"""Neurological deterioration within 14 days (Table 3 neurological panel, Figure 3b).
 
 Risk set: landmark cohort patients alive, in hospital and event-free at 48 hours. Target
 event: first physician-documented neurological deterioration; competing events: death and

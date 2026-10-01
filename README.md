@@ -23,8 +23,8 @@ hyponatremia/            shared modules
   tables.py              Word table formatting
 scripts/
   01_descriptive.py      study flow, Table 1, Supplementary Table S1
-  02_primary_model.py    primary logistic model, standardized risks, bootstrap (Tables 2-3, Figure 3A)
-  03_neurological.py     Fine-Gray and cause-specific models (Tables 3-4, Figure 3B)
+  02_primary_model.py    primary logistic model, standardized risks, bootstrap (Tables 2-3, Figure 3a)
+  03_neurological.py     Fine-Gray and cause-specific models (Tables 3-4, Figure 3b)
   04_secondary.py        90-day/1-year Cox, 7-30-day mortality, DAOH-30, readmission, FDR (Table 4, S2)
   05_sensitivity.py      sensitivity analyses, subgroups, spline dose-response, discharge model (S3, Figure 2)
   06_tables.py           Word tables

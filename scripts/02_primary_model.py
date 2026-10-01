@@ -1,4 +1,4 @@
-"""Primary analysis: correction rate and 30-day mortality (Table 2, Table 3 mortality panel, Figure 3A).
+"""Primary analysis: correction rate and 30-day mortality (Table 2, Table 3 mortality panel, Figure 3a).
 
 Multivariable logistic regression with multiple imputation (m = 20), Rubin's rules and D1
 joint tests; standardized risks and risk differences with patient-level bootstrap
